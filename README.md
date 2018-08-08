@@ -17,12 +17,12 @@ Download or clone this repository in your computer.
 
 
 **Step 2:**
-Enter to the API folder in your terminal
+Enter to the API folder in your terminal:
 
 ```
 cd API/
 ```
-Then enter the following command to install all the Node.js dependencies
+Then enter the following command to install all the Node.js dependencies:
 
 ```
 npm install
@@ -30,14 +30,15 @@ npm install
 
 
 **Step 3:**
-To start running the API, just tyoe the following command in the same path you were on the last step
+To start running the API, just tyoe the following command in the same path you were on the last step:
 
 ```
 nodemon app.js
 ```
 
-If it's running properly, you should see a message loke this in your terminal `[nodemon] starting 'node app.js'`
- 
+If it's running properly, you should see a message like this in your terminal `[nodemon] starting 'node app.js'`
+
+
  
 Now everything is set and you can proceed to test it.
 
@@ -46,4 +47,7 @@ Now everything is set and you can proceed to test it.
 
 
 
+
 ### How it works
+
+
