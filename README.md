@@ -36,9 +36,10 @@ To start running the API, just tyoe the following command in the same path you w
 nodemon app.js
 ```
 
-If it's running properly, you should see a message like this in your terminal `[nodemon] starting 'node app.js'`
+If it's running properly, you should see a message like this in your terminal: `[nodemon] starting 'node app.js'`.
 
-
+Screenshot:
+![Screenshot](api_running.png)
  
 Now everything is set and you can proceed to test it.
 
