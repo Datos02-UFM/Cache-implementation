@@ -1,14 +1,14 @@
 # Cache implementation
 
-#### User Story
+### User Story
 As a search application API user I want to be able to get related information to some keywords I may enter in a simple form. And keep those searches in my history so I can run same search again.
 
-#### Requirements
+### Requirements
 
 * Node.js installed
 * JMeter installes
 
-#### Step-by-step Installation
+### Step-by-step Installation
 
 **Step 1:**
 Download or clone this repository in your computer.
@@ -38,6 +38,6 @@ If it's running properly, you should see a message loke this in your terminal `[
 
 Now everything is set and you can proceed to test it.
  
-#### Cache Test
+### Cache Test
 
-#### How it works
+### How it works
