@@ -6,8 +6,8 @@ As a search application API user I want to be able to get related information to
 
 ### Requirements
 
-* Node.js installed
-* JMeter installed
+* Node.js installed - [Check it here](https://nodejs.org/en/)
+* JMeter installed - [Check it here](https://jmeter.apache.org/)
 
 
 ### Step-by-step Installation
