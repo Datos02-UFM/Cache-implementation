@@ -7,7 +7,7 @@ As a search application API user I want to be able to get related information to
 ### Requirements
 
 * Node.js installed
-* JMeter installes
+* JMeter installed
 
 
 ### Step-by-step Installation
