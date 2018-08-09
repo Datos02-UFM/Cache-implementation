@@ -53,7 +53,7 @@ In order to run the test, just launch JMeter, import the `cachingTest.jmx` file 
 
 #### Disc Used 
 
-The *disc usage* makes a reference to the free storage available in the AWS MySQL RDS instance used.
+The following *disc usage* shown makes reference to the free storage available in the AWS MySQL RDS instance used.
 
 ##### Before new requests
 
@@ -63,7 +63,41 @@ The *disc usage* makes a reference to the free storage available in the AWS MySQ
 
 ![](imgs/discAfter.png)
 
+##### Memory and CPU
+
+The following data was obtained via de Task Manager, the first registry shows the memory and cpu percentage used when making a new request and the second one shows the memory and cpu percentage used when making a request to the cache.
+
+![](imgs/memCpuComparison.jpeg)
+
+##### Response time
+
+The following times shown were obtained directly in JMeter when running the test. The first *10* rows are new requests made to the endpoint and the last *10* are requests made to the cache. The response time is shown under the *latency* field and it is given in milliseconds. 
+
+![](imgs/requestsComparison.jpeg)
 
 ### Architecture Diagram
 ![](imgs/archiDiagram.jpeg)
 
+### Data structures
+
+* The object received from a request to the endpoint is like the following JSON object:
+
+```
+{topic: ,
+articles: {
+}} 
+```
+
+* The cache in MySQL is stored in a table with the fields:
+```
+id | fecha | topic | info_array
+```
+
+![](imgs/cacheTable.jpeg)
+
+* Another table is used in the database to keep the *User Search History*, it is accomplish by logging the requets in a table with the fields:
+```
+fecha | topic | usuario
+```
+
+![](imgs/historyTable.jpeg)
