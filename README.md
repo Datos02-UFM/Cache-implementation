@@ -8,7 +8,7 @@ As a search application API user I want to be able to get related information to
 
 * Node.js installed - [Check it here](https://nodejs.org/en/)
 * JMeter installed - [Check it here](https://jmeter.apache.org/)
-* MySQL JMeter Connection Drivers - [Check it here](https://dev.mysql.com/downloads/connector/j/)
+* MySQL JMeter Connection Drivers - [Check it here](https://dev.mysql.com/downloads/connector/j/), you can also look at [this tutorial](https://www.3pillarglobal.com/insights/integrating-jmeter-and-mysql-into-your-database)
 
 ### Step-by-step Installation
 
