@@ -37,6 +37,9 @@ nodemon app.js
 ```
 
 If it's running properly, you should see a message like this in your terminal: `[nodemon] starting 'node app.js'`.
+
+![](imgs/api_running.png)
+
  
 Now everything is set and you can proceed to test it.
 
@@ -46,4 +49,17 @@ Now everything is set and you can proceed to test it.
 In order to run the test, just launch JMeter, import the `cachingTest.jmx` file and press Start. Three tests will run and you will be able to see the results.
 
 
+### Comparisons (profiling)
+
+#### Disc Used
+
+##### Before new requests
+
+
+##### After (10) requests stored in db
+
+
+
+### Architecture Diagram
+![](imgs/archiDiagram.jpeg)
 
