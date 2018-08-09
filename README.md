@@ -51,13 +51,17 @@ In order to run the test, just launch JMeter, import the `cachingTest.jmx` file 
 
 ### Comparisons (profiling)
 
-#### Disc Used
+#### Disc Used 
+
+The *disc usage* makes a reference to the free storage available in the AWS MySQL RDS instance used.
 
 ##### Before new requests
 
+![](imgs/discPrev.png)
 
 ##### After (10) requests stored in db
 
+![](imgs/discAfter.png)
 
 
 ### Architecture Diagram
