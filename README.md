@@ -1,7 +1,7 @@
 # Cache implementation
 
 ### User Story
-As a search application API user I want to be able to get related information to some keywords I may enter in a simple form. And keep those searches in my history so I can run same search again.
+*As a search application API user I want to be able to get related information to some keywords I may enter. And keep those searches in my history.*
 
 
 ### Requirements
@@ -43,7 +43,7 @@ Now everything is set and you can proceed to test it.
 
 ### Cache Test
 
-
+In order to run the test, just launch JMeter, import the `cachingTest.jmx` file and press Start. Three tests will run and you will be able to see the results.
 
 
 
