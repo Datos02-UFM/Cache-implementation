@@ -35,7 +35,7 @@ npm install
 
 
 **Step 3:**
-To start running the API, just tyoe the following command in the same path you were on the last step:
+To start running the API, just type the following command in the same path you were on the last step:
 
 ```
 nodemon app.js
