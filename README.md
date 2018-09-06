@@ -14,8 +14,11 @@
 * Node.js installed - [Check it here](https://nodejs.org/en/)
 * JMeter installed - [Check it here](https://jmeter.apache.org/)
 * MySQL JMeter Connection Drivers - [Check it here](https://dev.mysql.com/downloads/connector/j/), you can also look at [this tutorial](https://www.3pillarglobal.com/insights/integrating-jmeter-and-mysql-into-your-database)
+* Redis installed [Check it here](https://www.sitepoint.com/using-redis-node-js/)
+* ELK Stack installed [Check it here](https://www.youtube.com/watch?v=ge8uHdmtb1M&list=PL5zjQdAWZiUyxxHI72D_O5i77jlJrxKZr&index=1) [and here](https://github.com/andrewpuch/elasticsearch-logstash-kibana-tutorial)
+* ELK - Head and BigDesk plugins installed
 
-### Step-by-step Installation
+### Step-by-step setup
 
 **Step 1:**
 Download or clone this repository in your computer.
@@ -45,64 +48,67 @@ If it's running properly, you should see a message like this in your terminal: `
 
 ![](imgs/api_running.png)
 
- 
-Now everything is set and you can proceed to test it.
+**Step 4:**
+To start elasticsearch and logstash, do the following:
 
+```
+cd API
+service elasticsearch start
+service elasticsearch status
+service logstash start
+service logstash status
+```
+
+**Step 5:**
+To start kibana, do the following:
+
+```
+sudo su 
+cd /root
+cd kibana-4.1.2-linux-x64
+nohup ./bin/kibana &
+```
 
 ### Cache Test
 
-In order to run the test, just launch JMeter, import the `cachingTest.jmx` file and press Start. Three tests will run and you will be able to see the results.
+To cache results, we are using Redis. In order to run the test, just launch JMeter, import the `cachingTest.jmx` file and press Start. Three tests will run and you will be able to see the results.
 
-
-### Comparisons (profiling)
+### Profiling
 
 #### Disc Used 
 
-The following *disc usage* shown makes reference to the free storage available in the AWS MySQL RDS instance used.
+With *head* plugin, we can see that 51 docs created (51 logs saved), take as little as  92.4KB.
 
-##### Before new requests
+![](imgs/head.png)
 
-![](imgs/discPrev.png)
+##### Memory 
 
-##### After (10) requests stored in db
+With *big desk* plugin, we can see the memory used to run the full ELK stack, Redis and Node.js:
 
-![](imgs/discAfter.png)
+![](imgs/memory.png)
 
-##### Memory and CPU
 
-The following data was obtained via de Task Manager, the first registry shows the memory and cpu percentage used when making a new request and the second one shows the memory and cpu percentage used when making a request to the cache.
+Less than 1GB used out of the 16GB availabe in the instance.
 
-![](imgs/memCpuComparison.jpeg)
+##### CPU
+
+With *big desk* plugin, we can see how many threads ELK is running:
+
+![](imgs/cpu_threads.png)
 
 ##### Response time
 
-The following times shown were obtained directly in JMeter when running the test. The first *10* rows are new requests made to the endpoint and the last *10* are requests made to the cache. The response time is shown under the *latency* field and it is given in milliseconds. 
 
-![](imgs/requestsComparison.jpeg)
 
 ### Architecture Diagram
-![](imgs/archiDiagram.jpeg)
+![](imgs/diagram2.jpeg)
 
 ### Data structures
 
-* The object received from a request to the endpoint is like the following JSON object:
+* API search result:
 
-```
-{topic: ,
-articles: {
-}} 
-```
+![](imgs/api_search.png)
 
-* The cache in MySQL is stored in a table with the fields:
-```
-id | fecha | topic | info_array
-```
+* Logs registered in logstash:
 
-![](imgs/cacheTable.jpeg)
-
-* Another table is used in the database to keep the *User Search History*, it is accomplish by logging the requets in a table with the fields:
-```
-fecha | topic | usuario
-```
-
-![](imgs/historyTable.jpeg)
+![](imgs/log_result.png)
