@@ -154,7 +154,7 @@ If everything is running properly you should be avaible to visualize the followi
 
 ### API/Cache Test
 
-To cache results, we are using Redis. In order to run the test, just launch JMeter, import the `cachingTest.jmx` file and press Start. Three tests will run and you will be able to see the results.
+To cache results, we are using Redis. In order to run the test, just launch JMeter, import the `ELKlab.jmx` file and press Start. Three tests will run and you will be able to see the results.
 
 ### Profiling
 
