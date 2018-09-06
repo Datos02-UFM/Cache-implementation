@@ -170,7 +170,6 @@ With *big desk* plugin, we can see the memory used to run the full ELK stack, Re
 
 ![](imgs/memory.png)
 
-
 Less than 1GB used out of the 16GB availabe in the instance.
 
 #### CPU
@@ -179,9 +178,22 @@ With *big desk* plugin, we can see how many threads ELK is running:
 
 ![](imgs/cpu_threads.png)
 
-##### Response time
+#### Response time
 
----- Pendiente -----
+With JMeter, we obtained the following time responses:
+
+* Topic search summary:
+
+![](imgs/summary_topic.jpeg)
+
+* Topic search with ID summary:
+
+![](imgs/summary_topic_id.jpeg)
+
+* ID history search summary:
+
+![](imgs/summary_history.jpeg)
+
 
 ### Architecture Diagram
 
