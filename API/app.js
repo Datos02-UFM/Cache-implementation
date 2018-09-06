@@ -1,157 +1,184 @@
-//Dependencias
-const rp = require('request-promise')
+var rp = require('request-promise')
 var request = require('request')
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const mysql = require('mysql')
+var uuid = require('node-uuid');
+var httpContext = require('express-http-context');
+const myLoggers = require('log4js');
+myLoggers.configure({
+    appenders: { mylogger: { type:"file", filename: "/tmp/logstash.txt" } },
+    categories: { default: { appenders:["mylogger"], level:"ALL" } }
+});
 
-//logs con timings de requests
-app.use(morgan('short'))
 
-
-app.get('/articles/:topic&:userId', (req, res) => {
-  console.log("Fetching articles of topic: " + req.params.topic)
-
-  const connection = mysql.createConnection({
+//Define conexion a db
+const connection = mysql.createConnection({
     host: 'mysql-datos-2.cyufope5fgiy.us-east-1.rds.amazonaws.com',
     port: 3306,
     user: 'root',
     password: 'root1234',
     database: 'MySQL_Datos_2'
   })
+//timing 
+app.use(morgan('short'));
 
-  const myTopic = req.params.topic
-  const queryString = "SELECT topic, info_array FROM articulos WHERE topic = ?"
-  connection.query(queryString, [myTopic], (err, rows, fields) => {
-    if (err) {
-      //go fetch from wikipedia
-      console.log("Unable to retrieve from database: " + err)
-      res.sendStatus(500)
-      
-    }
+//sessionId
+app.use(httpContext.middleware);
 
-    //return info from db
-    var topArticles = rows.map((row) => {
-      return {"Topic": row.topic, "Top articles": row.info_array};
-    })
+// Asigna unique identifier a cada request
+app.use(function(req, res, next) {
+  httpContext.set('reqId', uuid.v1());
+  next();
+});
 
-    if (rows == 0) {
-      console.log("Not found locally; fetching from wikipedia");
-      var options={
-        methode: 'GET',
-        uri:'https://en.wikipedia.org/w/api.php?action=opensearch&search=' + myTopic + '&limit=25&namespace=0&format=json',
-        json:true
-      };
+//search con userid
+app.get('/search/:topic/:userId', (req, res) => {
+    console.log("Fetching articles of topic: " + req.params.topic)
+    const myTopic = req.params.topic
+    //revisa en redis 
+    var redis = require('redis');
+    var client = redis.createClient();
+    client.on('connect', function() {
+        console.log('Redis client connected');
+    });
+    client.on('error', function (err) {
+        console.log('Something went wrong ' + err);
+    });
+    client.get(myTopic, function (error, result) {
+        if (error) {
+            console.log(error);
+            throw error; }
+
+        //estructura json del resultado
+        console.log(result);
+
+        //si no esta la info en redis va a wikipedia
+        if (result==null){
+            console.log('Toca ir a wikipedia');
+            var options={
+                methode: 'GET',
+                uri:'https://en.wikipedia.org/w/api.php?action=opensearch&search=' + myTopic + '&limit=25&namespace=0&format=json',
+                json:true
+              };
+            rp(options)
+            .then(function(parseBody){topArticles = parseBody[1];
+                res.json("[{\"Topic\" : " + myTopic + ", \"Top articles\": " + topArticles + ", \"UserId\" : " + req.params.userId + "}]");
+            })
+            .catch(function (err){
+            }).finally(function(){
+                var cleanArticles = topArticles.toString().replace(/\'/,"-");
+                var cleanArticles2 = cleanArticles.toString().replace(/\'[a-zA-Z]/,"-");
+
+                //guarda la info en redis
+                client.set(myTopic, cleanArticles2, redis.print);
+                console.log('Se guardo en Redis')
+              });
+        }else{
+            console.log('Se encontro en Redis');
+            res.json("[{\"Topic\" : " + myTopic + ", \"Top articles\": " + result + ", \"UserId\" : " + req.params.userId + "}]");
+        }
+    });
+
+    //Guarda un log en mysql para el historial
+    var sql = "INSERT INTO user_logs (topic, usuario) VALUES ('" + myTopic + "', '" + req.params.userId + "')";
+    connection.query(sql, function (err, result) {
+    if (err) throw err;
+    console.log("1 log inserted");
+    });
+     //log
+    const logger = myLoggers.getLogger("default");
+    var log2 = myTopic + " " + req.params.userId;
+    logger.info(log2);
+
+})
+
+//search sin userid
+app.get('/search/:topic', (req, res) => {
+    console.log("Fetching articles of topic: " + req.params.topic)
+    //genera un user id
+    var reqId = httpContext.get('reqId');
+    const myTopic = req.params.topic
+
+    //Trae el topic de redis
+    var redis = require('redis');
+    var client = redis.createClient();
+    client.on('connect', function() {
+        console.log('Redis client connected');
+    });
+    client.on('error', function (err) {
+        console.log('Something went wrong ' + err);
+    });
+    client.get(myTopic, function (error, result) {
+        if (error) {
+            console.log(error);
+            throw error; }
+
+        //estructura json del resultado
+        console.log(result);
+
+        //si no esta la info en redis va a wikipedia
+        if (result==null){
+            console.log('Toca ir a wikipedia');
+            var options={
+                methode: 'GET',
+                uri:'https://en.wikipedia.org/w/api.php?action=opensearch&search=' + myTopic + '&limit=25&namespace=0&format=json',
+                json:true
+              };
+            rp(options)
+            .then(function(parseBody){topArticles = parseBody[1];
+                res.json("[{\"Topic\" : " + myTopic + ", \"Top articles\": " + topArticles + ", \"UserId\" : " +  reqId + "}]");
+            })
+            .catch(function (err){
+            }).finally(function(){
+                var cleanArticles = topArticles.toString().replace(/\'/,"-");
+                var cleanArticles2 = cleanArticles.toString().replace(/\'[a-zA-Z]/,"-");
+
+                //guarda la info en redis
+                client.set(myTopic, cleanArticles2, redis.print);
+                console.log('Se guardo en Redis')
+              });
+        }else{
+            console.log('Se encontro en Redis');
+            res.json("[{\"Topic\" : " + myTopic + ", \"Top articles\": " + result + ", \"UserId\" : " +  reqId + "}]");
+        }
+    });
     
-      rp(options)
-        .then(function(parseBody){
-          topArticles = parseBody[1];
-          res.json("[{Topic : " + myTopic + ", Top articles : " + topArticles + "}]");
-        })
-        .catch(function (err){
-        }).finally(function(){
-          var cleanArticles = topArticles.toString().replace(/\'/,"-");
-          var cleanArticles2 = cleanArticles.toString().replace(/\'[a-zA-Z]/,"-");
-          var sql = "INSERT INTO articulos (topic, info_array) VALUES ('" + myTopic + "', '" + cleanArticles2 + "')";
-          connection.query(sql, function (err, result) {
-          if (err) throw err;
-            console.log("1 record inserted");
-          });
-        });
-    }else{
-    res.json(topArticles);
-    }
-  })
-  //Inserta log del request
-  var sql = "INSERT INTO user_logs (topic, usuario) VALUES ('" + myTopic + "', '" + req.params.userId + "')";
-  connection.query(sql, function (err, result) {
-  if (err) throw err;
-  console.log("1 log inserted");
-  });
+    //Guarda un log en mysql para el historial
+    var sql = "INSERT INTO user_logs (topic, usuario) VALUES ('" + myTopic + "', '" +  reqId + "')";
+    connection.query(sql, function (err, result) {
+    if (err) throw err;
+    console.log("1 log inserted");
+    });
+    
+    //log
+    const logger = myLoggers.getLogger("default");
+    var log2 = myTopic + " " + reqId;
+    logger.info(log2);  
+
 })
 
-app.get("/", (req, res) => {
-  console.log("Responding to root route")
-  //res.send("Root")
-  const connection = mysql.createConnection({
-    host: 'mysql-datos-2.cyufope5fgiy.us-east-1.rds.amazonaws.com',
-    port: 3306,
-    user: 'root',
-    password: 'root1234',
-    database: 'MySQL_Datos_2'
-  })
-
-  const queryString = "delete from articuloss where topic = 'beatles'; "
-  connection.query(queryString, (err, rows, fields) => {
-    if (err) {
-      console.log("Failed to query for users: " + err)
-      res.sendStatus(500)
-      return
-      // throw err
-    }
-    res.json(rows)
-  })
-
-  // res.end()
-})
-
-app.get('/topTrends', (req, res) => {
-  console.log("Fetching top trends")
-
-  const connection = mysql.createConnection({
-    host: 'mysql-datos-2.cyufope5fgiy.us-east-1.rds.amazonaws.com',
-    port: 3306,
-    user: 'root',
-    password: 'root1234',
-    database: 'MySQL_Datos_2'
-  })
-
-  const queryString = "SELECT topic FROM user_logs GROUP BY topic ORDER BY count(*) DESC LIMIT 10; "
-  connection.query(queryString, (err, rows, fields) => {
-    if (err) {
-      console.log("Failed to query for users: " + err)
-      res.sendStatus(500)
-      return
-      // throw err
-    }
-    res.json(rows)
-  })
-
-  // res.end()
-})
-
+//obtener historial por usuario
 app.get('/history/:userId', (req, res) => {
-  console.log("Fetching history by userId")
-
-  const connection = mysql.createConnection({
-    host: 'mysql-datos-2.cyufope5fgiy.us-east-1.rds.amazonaws.com',
-    port: 3306,
-    user: 'root',
-    password: 'root1234',
-    database: 'MySQL_Datos_2'
-  })
-
-  const queryString = "SELECT fecha, topic FROM user_logs where usuario = ? "
-  connection.query(queryString, [req.params.userId], (err, rows, fields) => {
-    if (err) {
-      console.log("Failed to query for users: " + err)
-      res.sendStatus(500)
-      return
-      // throw err
-    }
-
-    const users = rows.map((row) => {
-      return {"Trending topics": row.topic}
+    console.log("Fetching history by userId")
+  
+    const queryString = "SELECT fecha, topic FROM user_logs where usuario = ? "
+    connection.query(queryString, [req.params.userId], (err, rows, fields) => {
+      if (err) {
+        console.log("Failed to query for users: " + err)
+        res.sendStatus(500)
+        return
+        // throw err
+      }
+      var historyUser = rows.map((row) => {
+        return {"Date": row.fecha, "url": "http://localhost:3003/search/" + row.topic + "/" + req.params.userId};
+      })
+      res.json(historyUser)
     })
-    
-    res.json(rows)
   })
+  
 
-  // res.end()
-})
-
-// localhost:3003
 app.listen(3003, () => {
-  console.log("Server is up and listening on 3003...")
-})
+    console.log("Server is up and listening on 3003...")
+  })
