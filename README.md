@@ -7,8 +7,13 @@
 
 ### User Story
 
----- PENDING -----
+**API user: **   
 
+*"get related information to some keywords I may enter in a simple form and keep those searches in my history so I can run the same search again. And create as many searches as I require."*
+
+**API admin: ** **
+
+*"Understand usage metrics from all users and run reports from historical information"*
 
 ### Requirements
 
